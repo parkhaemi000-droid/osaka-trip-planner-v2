@@ -175,10 +175,39 @@ export default function RestaurantsMap({
 
   if (loadError) {
     return (
-      <div className="w-full h-full min-h-[350px] border border-stone-200 bg-stone-50 rounded-2xl flex items-center justify-center p-6 text-center text-xs text-stone-500">
-        <div>
-          <p className="font-bold text-red-500 mb-2">⚠️ {loadError}</p>
-          <p>구글 맵 SDK 로드 중 문제가 생겼습니다. API 키를 재설정해 보거나 로컬 네트워크를 체크해 주세요.</p>
+      <div className="w-full h-full min-h-[450px] border border-rose-100 bg-white rounded-2xl flex items-center justify-center p-6 text-center shadow-3xs">
+        <div className="max-w-md space-y-4">
+          <div className="mx-auto w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center font-bold text-xl">
+            🔑
+          </div>
+          <h3 className="text-sm md:text-base font-bold text-gray-900">구글 지도(Google Maps) 및 맛집 검색 활성화 안내</h3>
+          <p className="text-[11px] text-gray-500 leading-relaxed">
+            실시간 오사카 음식점 탐색 및 평점 조회를 위해 구글 지도 API 키 연동이 필요합니다.
+          </p>
+          
+          <div className="bg-gray-50/70 rounded-xl p-4 border border-gray-150/50 text-left text-[11px] space-y-3">
+            <div>
+              <span className="block font-bold text-gray-800">1️⃣ AI Studio Secrets에 키 추가 방법:</span>
+              <ul className="list-disc pl-4 text-gray-600 mt-1 space-y-0.5 leading-relaxed">
+                <li>우측 상단 ⚙️ <strong className="text-gray-900">Settings</strong> → <strong className="text-gray-900">Secrets</strong> 메뉴 클릭</li>
+                <li>이름에 <code className="bg-gray-150 px-1 py-0.5 rounded font-mono text-rose-600 text-[10px]">GOOGLE_MAPS_PLATFORM_KEY</code> 입력 후 추가</li>
+                <li>실제 발급 받으신 구글 맵 API 키 값을 입력하고 저장하세요.</li>
+              </ul>
+            </div>
+            
+            <div className="border-t border-gray-150/40 pt-2">
+              <span className="block font-bold text-gray-800">2️⃣ 구글 클라우드 콘솔 설정 확인법:</span>
+              <ul className="list-disc pl-4 text-gray-600 mt-1 space-y-0.5 leading-relaxed">
+                <li>구글 클라우드 콘솔 왼쪽 위 삼선(☰) 메뉴 클릭 → <strong className="text-gray-900">[API 및 서비스] &gt; [라이브러리]</strong>로 이동</li>
+                <li><strong className="text-gray-900">Maps JavaScript API</strong> 및 <strong className="text-gray-900">Places API (New)</strong>를 각각 검색하여 <strong className="text-emerald-600">사용(Enable)</strong> 버튼을 눌러주세요.</li>
+                <li>키에 HTTP 리referrer 제한을 거셨다면, 현재 앱 주소인 <code className="bg-gray-150 px-1 text-[10px] rounded">*.run.app/*</code>가 허용되어 있는지 확인해 주세요.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <p className="text-[10px] text-orange-600 font-semibold">
+            💡 팁: API 키 설정이 비어 있는 동안에도 내장된 캐시 및 오사카 명품 맛집 6대 가이드(아치치혼포, 이치란, 하루코마 등) 시뮬레이션 목록은 정상 검색·일정 등록이 가능합니다!
+          </p>
         </div>
       </div>
     );

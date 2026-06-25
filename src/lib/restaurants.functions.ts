@@ -1,5 +1,23 @@
 import { Restaurant } from './restaurants';
 
+function getMapsApiKey(): string {
+  return process.env.GOOGLE_MAPS_PLATFORM_KEY || process.env.ROUTES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '';
+}
+
+function isPlaceholderKey(key: string): boolean {
+  if (!key) return true;
+  const k = key.trim();
+  return (
+    k === 'YOUR_API_KEY' ||
+    k === 'MY_GEMINI_API_KEY' ||
+    k === 'MY_GOOGLE_MAPS_PLATFORM_KEY' ||
+    k === 'YOUR_GOOGLE_MAPS_API_KEY' ||
+    k.includes('PLACEHOLDER') ||
+    k.includes('아직_없으면') ||
+    k.length <= 20
+  );
+}
+
 const FAMOUS_MOCK_RESTAURANTS: Restaurant[] = [
   {
     id: 'achichi_honppo',
@@ -133,9 +151,9 @@ function normalizePlace(place: any): Restaurant {
  * Perform Search Text call to Google Places API (New)
  */
 export async function fetchFromGooglePlaces(query: string, location?: { lat: number; lng: number }): Promise<Restaurant[]> {
-  const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY;
-  if (!apiKey || apiKey === 'YOUR_API_KEY' || apiKey === 'MY_GEMINI_API_KEY') {
-    console.warn('[Places API] GOOGLE_MAPS_PLATFORM_KEY is missing. Defaulting to local famous gourmet selection.');
+  const apiKey = getMapsApiKey();
+  if (isPlaceholderKey(apiKey)) {
+    console.warn('[Places API] GOOGLE_MAPS_PLATFORM_KEY is missing or invalid. Defaulting to local famous gourmet selection.');
     return filterMockRestaurants(query);
   }
 
@@ -187,8 +205,8 @@ export async function fetchFromGooglePlaces(query: string, location?: { lat: num
  * Perform Search Nearby call to Google Places API (New)
  */
 export async function fetchNearbyFromGooglePlaces(lat: number, lng: number, radius = 1000): Promise<Restaurant[]> {
-  const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY;
-  if (!apiKey || apiKey === 'YOUR_API_KEY') {
+  const apiKey = getMapsApiKey();
+  if (isPlaceholderKey(apiKey)) {
     return FAM_MOCK_NEARBY(lat, lng);
   }
 
@@ -235,8 +253,8 @@ export async function fetchNearbyFromGooglePlaces(lat: number, lng: number, radi
  * Perform Geocoding call using Google Geocoding API
  */
 export async function geocodeAddressWithGoogle(address: string): Promise<{ lat: number; lng: number } | null> {
-  const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY;
-  if (!apiKey || apiKey === 'YOUR_API_KEY') {
+  const apiKey = getMapsApiKey();
+  if (isPlaceholderKey(apiKey)) {
     // If mocking, return approximate coords based on popular strings
     const lower = address.toLowerCase();
     if (lower.includes('난바') || lower.includes('namba')) return { lat: 34.6651, lng: 135.5011 };

@@ -55,7 +55,8 @@ app.get('/api/google-maps/geocode', async (req, res) => {
 
 // Config endpoint to expose Google Maps API key safely to client-side loader
 app.get('/api/config/maps-key', (req, res) => {
-  res.json({ apiKey: process.env.GOOGLE_MAPS_PLATFORM_KEY || '' });
+  const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || process.env.ROUTES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '';
+  res.json({ apiKey });
 });
 
 // Config endpoint to expose Firebase configuration safely to client-side loader
@@ -294,7 +295,7 @@ app.post('/api/routes/transit', async (req, res) => {
       return res.status(400).json({ error: '출발지와 목적지의 위경도 정보가 올바르지 않습니다.' });
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || '';
+    const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || process.env.ROUTES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || '';
     
     const cacheKey = JSON.stringify({ origin, destination, transitPreferences, languageCode });
     const cached = transitRouteCache.get(cacheKey);
@@ -303,9 +304,17 @@ app.post('/api/routes/transit', async (req, res) => {
       return res.json(cached.data);
     }
 
+    const isPlaceholder = !apiKey || 
+      apiKey === 'MY_GOOGLE_MAPS_PLATFORM_KEY' || 
+      apiKey === 'YOUR_API_KEY' || 
+      apiKey === 'YOUR_GOOGLE_MAPS_API_KEY' || 
+      apiKey.includes('PLACEHOLDER') || 
+      apiKey.includes('아직_없으면') || 
+      apiKey.length <= 20;
+
     // If Google Maps API key is missing or is just a placeholder, fallback instantly
-    if (!apiKey || apiKey === 'MY_GOOGLE_MAPS_PLATFORM_KEY') {
-      console.log('[Transit Proxy] Google Maps Key is missing. Falling back to high-fidelity simulated response.');
+    if (isPlaceholder) {
+      console.log('[Transit Proxy] Google Maps Key is missing or invalid. Falling back to high-fidelity simulated response.');
       const simulated = generateSimulatedRoutes(origin, destination, transitPreferences);
       return res.json(simulated);
     }

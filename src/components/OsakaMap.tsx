@@ -150,6 +150,48 @@ export default function OsakaMap({
   days,
 }: OsakaMapProps) {
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
+  const [dynamicKey, setDynamicKey] = useState<string | null>(null);
+  const [isCheckingKey, setIsCheckingKey] = useState(true);
+
+  useEffect(() => {
+    const buildTimeKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || '';
+    const isBuildTimeValid = 
+      Boolean(buildTimeKey) && 
+      buildTimeKey !== 'YOUR_API_KEY' && 
+      buildTimeKey !== 'MY_GOOGLE_MAPS_PLATFORM_KEY' && 
+      buildTimeKey !== 'YOUR_GOOGLE_MAPS_API_KEY' &&
+      !buildTimeKey.includes('PLACEHOLDER') &&
+      buildTimeKey.length > 20;
+
+    if (isBuildTimeValid) {
+      setDynamicKey(buildTimeKey);
+      setIsCheckingKey(false);
+    } else {
+      fetch('/api/config/maps-key')
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error();
+        })
+        .then((data) => {
+          const fetchedKey = data.apiKey || '';
+          const isFetchedValid = 
+            Boolean(fetchedKey) && 
+            fetchedKey !== 'YOUR_API_KEY' && 
+            fetchedKey !== 'MY_GOOGLE_MAPS_PLATFORM_KEY' && 
+            fetchedKey !== 'YOUR_GOOGLE_MAPS_API_KEY' &&
+            !fetchedKey.includes('PLACEHOLDER') &&
+            fetchedKey.length > 20;
+
+          if (isFetchedValid) {
+            setDynamicKey(fetchedKey);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          setIsCheckingKey(false);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedLandmarkId) {
@@ -157,7 +199,18 @@ export default function OsakaMap({
     }
   }, [selectedLandmarkId]);
 
-  if (!hasValidKey) {
+  if (isCheckingKey) {
+    return (
+      <div className="w-full h-[500px] border border-stone-200 rounded-2xl bg-stone-50 flex items-center justify-center p-6 text-center">
+        <div className="flex flex-col items-center gap-2">
+          <span className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-stone-500 font-semibold">지도 API 연결 상태 확인 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dynamicKey) {
     return (
       <div className="w-full h-[500px] border border-stone-200 rounded-2xl bg-stone-50 flex items-center justify-center p-6 text-center">
         <div className="max-w-md space-y-4">
@@ -178,7 +231,7 @@ export default function OsakaMap({
             </ul>
           </div>
           <p className="text-[10px] text-sky-600 font-semibold italic">
-            💡 위 설정을 완료하시면 페이지 새로고침 없이 즉시 인터랙티브 3D 주도가 나타납니다!
+            💡 위 설정을 완료하시면 페이지 새로고침 없이 즉시 인터랙티브 3D 지도가 나타납니다!
           </p>
         </div>
       </div>
@@ -190,7 +243,7 @@ export default function OsakaMap({
 
   return (
     <div className="relative border border-gray-100/80 rounded-2xl overflow-hidden shadow-2xs h-[500px] w-full">
-      <APIProvider apiKey={API_KEY} version="weekly">
+      <APIProvider apiKey={dynamicKey} version="weekly">
         <Map
           defaultCenter={defaultCenter}
           defaultZoom={12}
