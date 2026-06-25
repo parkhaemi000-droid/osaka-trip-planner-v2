@@ -1,0 +1,6 @@
+{
+  "name": "오사카 일정 플래너",
+  "description": "나만의 맞춤형 오사카 여행 일정을 계획하고 AI 일정 생성 및 유용한 팁, 경비 계산 및 체크리스트를 한눈에 관리할 수 있는 스마트 여행 가이드 앱",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
