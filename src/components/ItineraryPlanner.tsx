@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Plus, Trash2, Clock, MapPin, AlignLeft, CreditCard, 
-  Utensils, Compass, ShoppingBag, Train, FileText, ChevronRight 
+  Utensils, Compass, ShoppingBag, Train, FileText, ChevronRight,
+  Sparkles, RefreshCw
 } from 'lucide-react';
 import { ItineraryItem, ActivityCategory } from '../types';
 
@@ -12,6 +13,7 @@ interface ItineraryPlannerProps {
   onAddItem: (item: Omit<ItineraryItem, 'id'>) => void;
   onDeleteItem: (id: string) => void;
   onClearAll: () => void;
+  onUpdateItinerary: (items: ItineraryItem[]) => void;
 }
 
 export default function ItineraryPlanner({
@@ -20,10 +22,12 @@ export default function ItineraryPlanner({
   jpyToKrwRate,
   onAddItem,
   onDeleteItem,
-  onClearAll
+  onClearAll,
+  onUpdateItinerary
 }: ItineraryPlannerProps) {
   const [activeDay, setActiveDay] = useState<number>(1);
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
+  const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
 
   // Form State
   const [time, setTime] = useState<string>('10:00');
@@ -57,6 +61,45 @@ export default function ItineraryPlanner({
     setCost('');
     setNotes('');
     setShowAddForm(false);
+  };
+
+  const handleOptimizeRoute = async () => {
+    if (items.length === 0) {
+      alert('최적화할 일정이 없습니다. 일정을 먼저 등록해주세요!');
+      return;
+    }
+
+    if (!confirm('AI를 사용해 일정을 분석하고 동선이 꼬이지 않도록 방문 순서 및 시각을 자동 최적화하시겠습니까?\n(기존 일정 순서와 시간이 변경될 수 있습니다.)')) {
+      return;
+    }
+
+    setIsOptimizing(true);
+    try {
+      const response = await fetch('/api/optimize-route', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ items }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || '동선 최적화 서버 통신 오류');
+      }
+
+      if (data.itinerary && Array.isArray(data.itinerary)) {
+        onUpdateItinerary(data.itinerary);
+        alert('✨ 오사카 최적화 동선 배치가 완료되었습니다! 이제 날짜별 타임라인과 지도를 확인해보세요.');
+      } else {
+        throw new Error('유효하지 않은 응답 형식입니다.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || '동선 최적화 중 에러가 발생했습니다. AI Studio Secrets에서 GEMINI_API_KEY가 올바르게 등록되어 있는지 확인해주세요.');
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
   const getCategoryIcon = (cat: ActivityCategory) => {
@@ -112,18 +155,40 @@ export default function ItineraryPlanner({
           </p>
         </div>
 
-        {items.length > 0 && (
-          <button
-            onClick={() => {
-              if (confirm('정말로 작성된 모든 일정을 초기화하시겠습니까?')) {
-                onClearAll();
-              }
-            }}
-            className="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer"
-          >
-            전체 비우기
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <button
+              onClick={handleOptimizeRoute}
+              disabled={isOptimizing}
+              className="text-xs font-bold text-white bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 px-3.5 py-1.5 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-xs hover:shadow-sm"
+            >
+              {isOptimizing ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>동선 분석 중...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <span>AI 동선 최적화 ✨</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {items.length > 0 && (
+            <button
+              onClick={() => {
+                if (confirm('정말로 작성된 모든 일정을 초기화하시겠습니까?')) {
+                  onClearAll();
+                }
+              }}
+              className="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer"
+            >
+              전체 비우기
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Days tabs */}

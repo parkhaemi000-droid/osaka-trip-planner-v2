@@ -71,7 +71,7 @@ const FAMOUS_MOCK_RESTAURANTS: Restaurant[] = [
   {
     id: 'kushikatsu_daruma',
     name: '쿠시카츠 다루마 신세카이 총본점',
-    nameJa: '元祖串かつ だる마 新世界総本店',
+    nameJa: '元祖串かつ だる마 新世界총본점',
     rating: 4.4,
     userRatingCount: 2210,
     formattedAddress: '2-3-9 Ebisuhigashi, Naniwa Ward, Osaka, 556-0002',
@@ -112,6 +112,77 @@ const FAMOUS_MOCK_RESTAURANTS: Restaurant[] = [
     types: ['restaurant', 'steak_house'],
     openNow: true,
     cuisineType: '규카츠/소고기 커틀릿'
+  },
+  {
+    id: 'kani_doraku_dotonbori',
+    name: '카니도라쿠 도톤보리 본점',
+    nameJa: 'かに道楽 道頓堀本店',
+    rating: 4.4,
+    userRatingCount: 5120,
+    formattedAddress: '1-6-18 Dotonbori, Chuo Ward, Osaka, 542-0071',
+    location: { lat: 34.6687, lng: 135.5013 },
+    websiteUri: 'https://douraku.co.jp',
+    priceLevel: 'PRICE_LEVEL_EXPENSIVE',
+    editorialSummary: '도톤보리의 상징적인 거대 움직이는 게 간판으로 유명한 오사카 최고의 대게 요리 코스 전문점. 신선한 게회부터 구이, 찜, 솥밥까지 선사합니다.',
+    types: ['restaurant', 'food'],
+    openNow: true,
+    cuisineType: '대게 코스 요리/해산물'
+  },
+  {
+    id: 'hanatako_umeda',
+    name: '하나타코 우메다 한큐삼번가',
+    nameJa: 'はなだこ',
+    rating: 4.4,
+    userRatingCount: 3845,
+    formattedAddress: '9-26 Kakudacho, Kita Ward, Osaka, 530-0017 (우메다 한큐역 인근)',
+    location: { lat: 34.7029, lng: 135.4984 },
+    priceLevel: 'PRICE_LEVEL_INEXPENSIVE',
+    editorialSummary: '우메다역의 타코야끼 초인기 맛집. 싱싱하고 아삭한 쪽파를 산더미처럼 가득 얹어 마요네즈와 곁들여 먹는 시그니처 네기마요 타코야끼가 유명합니다.',
+    types: ['restaurant', 'food'],
+    openNow: true,
+    cuisineType: '네기마요 타코야끼'
+  },
+  {
+    id: 'honmiyake_umeda',
+    name: '혼미야케 우메다 한큐삼번가점',
+    nameJa: '本みやけ 阪急三番街店',
+    rating: 4.5,
+    userRatingCount: 1540,
+    formattedAddress: '1-1-3 Shibata, Kita Ward, Osaka, 530-0012 (한큐삼번가 지하 2층)',
+    location: { lat: 34.7042, lng: 135.4980 },
+    priceLevel: 'PRICE_LEVEL_MODERATE',
+    editorialSummary: '한큐 삼번가에 위치한 전설적인 스테이크 덮밥(스테키동) 전문점. 부드럽고 도톰한 소고기 스테이크에 특제 타레 소스가 입혀진 가성비 극상의 맛집.',
+    types: ['restaurant', 'food'],
+    openNow: true,
+    cuisineType: '스테이크 덮밥/규동'
+  },
+  {
+    id: 'mizuno_okonomiyaki',
+    name: '미즈노 오코노미야키 도톤보리',
+    nameJa: '美津の',
+    rating: 4.3,
+    userRatingCount: 3410,
+    formattedAddress: '1-4-15 Dotonbori, Chuo Ward, Osaka, 542-0071',
+    location: { lat: 34.6685, lng: 135.5020 },
+    priceLevel: 'PRICE_LEVEL_MODERATE',
+    editorialSummary: '미슐랭 가이드에 등재된 오랜 역사의 도톤보리 오코노미야키 전문점. 밀가루를 쓰지 않고 100% 마 반죽만을 사용하여 부드럽게 녹아내리는 산마야키가 시그니처입니다.',
+    types: ['restaurant', 'food'],
+    openNow: true,
+    cuisineType: '미슐랭 오코노미야키'
+  },
+  {
+    id: 'rikuro_cheese_namba',
+    name: '리쿠로 오지산의 가게 난바 본점',
+    nameJa: 'りくろーおじさんの店 難波本店',
+    rating: 4.5,
+    userRatingCount: 7820,
+    formattedAddress: '3-2-15 Namba, Chuo Ward, Osaka, 542-0076',
+    location: { lat: 34.6663, lng: 135.5015 },
+    priceLevel: 'PRICE_LEVEL_INEXPENSIVE',
+    editorialSummary: '갓 구워져 나올 때 흔들면 탱글탱글하게 흔들리는 오사카 대표 수플레 치즈케이크 명가. 은은한 단맛과 건포도의 어우러짐이 환상적입니다.',
+    types: ['bakery', 'cafe', 'food'],
+    openNow: true,
+    cuisineType: '수플레 치즈케이크/디저트'
   }
 ];
 

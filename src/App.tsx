@@ -365,6 +365,7 @@ export default function App() {
               onAddItem={handleAddItem}
               onDeleteItem={handleDeleteItem}
               onClearAll={handleClearItinerary}
+              onUpdateItinerary={saveItinerary}
             />
           )}
 

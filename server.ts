@@ -525,6 +525,90 @@ ${customRequirements ? `- 추가 요구사항: ${customRequirements}` : ''}
   }
 });
 
+// API Route: Optimize travel routes to avoid backtracking
+app.post('/api/optimize-route', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: '최적화할 일정이 존재하지 않습니다.' });
+    }
+
+    const itemsWithLocation = items.filter(item => item.location && item.location.trim().length > 0);
+    if (itemsWithLocation.length <= 1) {
+      // Just sort them by time if they are not already sorted, or return as is
+      const sorted = [...items].sort((a, b) => {
+        if (a.day !== b.day) return a.day - b.day;
+        return a.time.localeCompare(b.time);
+      });
+      return res.json({ itinerary: sorted, message: '일정이 너무 적거나 위치 정보가 없어 기존 시간 순으로 정렬되었습니다.' });
+    }
+
+    const client = getGeminiClient();
+
+    const prompt = `
+당신은 오사카 지리와 대중교통 노선에 완벽하게 정통한 전문 여행 가이드입니다.
+사용자가 등록한 다음 여행 일정 목록을 확인하고, **날짜(day)별로** 방문하는 장소들의 위치(location)를 분석하여 동선이 꼬이거나 불필요한 이동(왔다 갔다 하는 비효율적인 동선)이 발생하지 않도록 **지리적으로 최적화된 방문 순서**로 재배치해주세요.
+
+[현재 사용자 일정 목록]
+${JSON.stringify(items, null, 2)}
+
+[최적화 요구사항]
+1. 입력받은 모든 일정을 누락 없이 그대로 유지해야 합니다. (항목을 삭제하거나 임의로 새로운 항목을 추가하지 마세요. 모든 ID가 그대로 유지되어야 합니다.)
+2. 각 날짜(day)별로 위치(location)와 이동 편의성을 분석하여 가장 매끄러운 동선(예: 서쪽에서 동쪽, 북쪽에서 남쪽 등으로 이어지는 순차적 흐름)으로 순서를 정렬하십시오.
+3. 정렬된 순서에 맞게 각 일정의 방문 시간("time")을 적절히 재조정하십시오. (예: 아침 09:30 또는 10:00부터 시작해서 순서대로 2~3시간씩 간격을 두고 점심, 오후, 저녁 시간대로 시간대를 변경/조정해 줍니다. 예를 들어 10:00, 13:00, 16:00, 19:00 형태로 자연스럽게 흐르도록 설정하십시오.)
+4. 각 일정의 "notes" 필드에 "동선 가이드: [이전 장소에서 이 장소로 이동할 때 대중교통 팁이나 최적화 이유 등]" 형태의 유용한 가이드 팁을 추가 또는 수정하여 제공해 주세요. 기존 메모가 있다면 뒤에 이어서 덧붙여 주면 좋습니다.
+5. 반드시 아래 JSON 형식으로만 정확히 채워진 응답을 반환하세요. 앞뒤에 마크다운 코드블록(\`\`\`json ...) 표시나 설명을 절대로 붙이지 마세요. 오직 순수한 JSON 배열만 반환해야 합니다.
+
+[응답 형식]
+[
+  {
+    "id": "원래 아이디",
+    "day": 원래_날짜,
+    "time": "최적화된_방문_시각(HH:MM)",
+    "title": "원래 제목",
+    "location": "원래 장소",
+    "cost": 원래 비용,
+    "category": "원래 카테고리",
+    "notes": "기존 메모에 동선 팁이 추가된 텍스트"
+  }
+]
+`;
+
+    const response = await client.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const responseText = response.text || '[]';
+    let cleanedText = responseText.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.substring(7);
+    }
+    if (cleanedText.endsWith('```')) {
+      cleanedText = cleanedText.substring(0, cleanedText.length - 3);
+    }
+    cleanedText = cleanedText.trim();
+
+    try {
+      const parsedData = JSON.parse(cleanedText);
+      if (Array.isArray(parsedData)) {
+        res.json({ itinerary: parsedData });
+      } else {
+        throw new Error('응답이 배열 형식이 아닙니다.');
+      }
+    } catch (parseErr) {
+      console.error('Parsing error on model route optimization output:', cleanedText, parseErr);
+      res.status(500).json({ error: 'AI 동선최적화 결과 해석 중 오류가 발생했습니다. 다시 시도해 주세요.' });
+    }
+  } catch (error: any) {
+    console.error('Gemini Route Optimization API Error:', error);
+    res.status(500).json({ error: error.message || '동선을 최적화하는 과정에서 에러가 발생했습니다.' });
+  }
+});
+
 // Setup Vite development server or production static serving
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
